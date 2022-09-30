@@ -1,0 +1,4 @@
+import random
+
+SYMBOL_COUNT = 256
+ROTORS_COUNT = 3
