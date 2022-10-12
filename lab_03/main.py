@@ -29,8 +29,6 @@ if __name__ == '__main__':
     data = input_file.read()
     bits_arr = bytes_to_bits(data)
 
-    print("input:", bits_arr)
-
     key_file = open(key_filename, 'rb')
     key = key_file.read()
     key_bits = bytes_to_bits(key)
@@ -39,18 +37,37 @@ if __name__ == '__main__':
 
     round_keys = des.generate_round_keys(key_bits)
 
-    #enc = des.encrypt(bits_arr, round_keys)
-    #print("enc:  ", enc)
+    temp = ""
+    enc_res = ""
+    for bit in bits_arr:
+        temp += str(bit)
+        if len(temp) == 64:
+            enc = des.encrypt(temp, round_keys)
+            enc_res += enc
+            temp = ""
+
+    n = len(temp)
+    if 0 < n < 64:
+        zeros = 64 - n
+        for i in range (zeros):
+            temp += "0"
+        enc = des.encrypt(temp, round_keys)
+        enc_res += enc
+    
+    temp = ""
+    dec_res = ""
+    for bit in enc_res:
+        temp += str(bit)
+        if len(temp) == 64:
+            dec = des.decrypt(temp, round_keys)
+            dec_res += dec
+            temp = ""
+        
+    zeros = 64 - n
+    dec_res = dec_res[:(len(dec_res) - zeros)]
 
     enc_file = open('enc_' + filename, 'wb')
-    enc_file.write(bits_to_bytes(enc))
-
-    #dec = des.decrypt(enc, round_keys)
-    #print("dec:  ", dec)
-
-    a = "010";
-    print(a)
-    print(des.permutation(a, (3, 1, 2))[::1])
+    enc_file.write(bits_to_bytes(enc_res))
 
     output_file = open('dec_' + filename, 'wb')
-    output_file.write(bytes_arr)
+    output_file.write(bits_to_bytes(dec_res))

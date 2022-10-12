@@ -1,4 +1,3 @@
-from turtle import left
 from des_tables import *
 
 def permutation(bits_block: str, table: list):
@@ -32,6 +31,7 @@ def generate_round_keys(key: str): #На вход подается 64-битны
         #Получаем очередной раундовый ключ.
         round_key = permutation(round_key, key_compression_table)
         round_keys.append(round_key)
+
     return round_keys
 
 #Шифрование.
@@ -51,8 +51,9 @@ def encrypt(message: str, round_keys: list): #На вход подается 64-
         left_half = new_left_half
         right_half = new_right_half
     
-    message = left_half + right_half
+    message = right_half + left_half
     message = permutation(message, initial_permutation_back)
+    
     return message
 
 #Расшифровка.
@@ -63,16 +64,14 @@ def decrypt(message: str, round_keys: list): #На вход подается 64-
     left_half = message[:32]
     right_half = message[32:]
     #Выполняем 16 раундов.
-    for i in range(16):
-        #Новая левая половина получается из старой правой.
-        new_right_half = left_half
-        #Новая правая получается из старой левой и XOR из функции Фейстеля
-        new_left_half = str_xor(right_half, feistel_cipher(left_half, round_keys[i]))
+    for i in range(15, -1, -1):
+        new_left_half = right_half
+        new_right_half = str_xor(left_half, feistel_cipher(right_half, round_keys[i]))
 
         left_half = new_left_half
         right_half = new_right_half
     
-    message = left_half + right_half
+    message = right_half + left_half
     message = permutation(message, initial_permutation_back)
     return message
 
